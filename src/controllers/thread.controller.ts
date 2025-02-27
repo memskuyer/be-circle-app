@@ -1,9 +1,8 @@
+import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
 import { NextFunction, Request, Response } from 'express';
+import likesService from '../services/likes.service';
 import threadService from '../services/thread.service';
 import { createThreadShema } from '../utils/schemas/thread.validator';
-import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
-import fs from 'fs';
-import likesService from '../services/likes.service';
 
 class threadController {
   async getThread(req: Request, res: Response, next: NextFunction) {
@@ -117,7 +116,6 @@ class threadController {
 
       if (req.file) {
         uploadResult = await cloudinary.uploader.upload(req.file?.path || '');
-        fs.unlinkSync(req.file.path);
       }
 
       const body = {
