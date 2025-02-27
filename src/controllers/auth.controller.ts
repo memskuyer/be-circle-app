@@ -12,6 +12,7 @@ import {
   registerSchema,
   resetPasswordSchema,
 } from '../utils/schemas/auth.validator';
+import { log } from 'node:console';
 
 class authController {
   jwtsecret = process.env.JWT_SECRET_KEY || '';
@@ -55,12 +56,13 @@ class authController {
         jwtSecretKey,
         { expiresIn: '1d' },
       );
-
+      const getDataUser = await userService.getUsersById(user.id);
+      const followerCount = getDataUser?.followers.length || 0;
+      const followingCount = getDataUser?.followings.length || 0;
       const { password: unUsedPassword, ...userResponse } = user;
-
       res.status(200).json({
         message: 'Login Success',
-        data: { user: userResponse, token },
+        data: { user: { userResponse, followerCount, followingCount }, token },
       });
     } catch (error) {
       next(error);
@@ -121,10 +123,15 @@ class authController {
         });
         return;
       }
+      const followerCount = user.followers.length || 0;
+      const followingCount = user.followings.length || 0;
 
       const { password: unusedPassword, ...userResponse } = user;
 
-      res.status(200).json({ message: 'Success', data: { ...userResponse } });
+      res.status(200).json({
+        message: 'Success',
+        data: { ...userResponse, followerCount, followingCount },
+      });
     } catch (error) {
       next(error);
     }

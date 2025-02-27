@@ -64,7 +64,6 @@ class UserController {
           };
         }),
       );
-
       if (!userData) {
         res.status(404).json({ message: 'Data Tidak Ditemukan' });
         return;
