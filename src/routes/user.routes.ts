@@ -1,8 +1,7 @@
 import express from 'express';
 import userController from '../controllers/users.controller';
 import { authCheck } from '../middlewares/auth-check.middleware';
-import { initCloudinary } from '../middlewares/cloudinary.middleware';
-import { uploadImage } from '../middlewares/multer.middleware';
+import uploadImage from '../middlewares/multer.middleware';
 const router = express.Router();
 
 router.get('/', authCheck, userController.getUsers);
@@ -12,7 +11,6 @@ router.post('/', userController.createUsers);
 router.put(
   '/',
   authCheck,
-  initCloudinary,
   uploadImage.fields([
     { name: 'avatarUrl', maxCount: 1 },
     { name: 'bannerUrl', maxCount: 1 },
