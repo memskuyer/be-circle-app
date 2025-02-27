@@ -5,7 +5,9 @@
   "scripts": {
     "start": "nodemon ./src/index.ts",
     "prepare": "husky",
-    "swagger": "ts-node swagger/swagger.ts"
+    "swagger": "ts-node swagger/swagger.ts",
+    "build": "tsc",
+    "postinstall": "prisma generate && prisma migrate deploy"
   },
   "keywords": [],
   "author": "",
