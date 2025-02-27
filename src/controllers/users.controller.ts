@@ -150,7 +150,6 @@ class UserController {
           files['avatarUrl'][0].path,
         );
         avatarUrl = uploadedAvatar.secure_url;
-        fs.unlinkSync(files['avatarUrl'][0].path);
       }
 
       if (files?.['bannerUrl']?.[0]) {
@@ -158,7 +157,6 @@ class UserController {
           files['bannerUrl'][0].path,
         );
         bannerUrl = uploadedBanner.secure_url;
-        fs.unlinkSync(files['bannerUrl'][0].path);
       }
 
       const body = {
