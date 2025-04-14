@@ -1,5 +1,6 @@
 import Joi from 'joi';
 import {
+  changePasswordDTO,
   ForgotPasswordDTO,
   LoginDTO,
   RegisterDTO,
@@ -21,7 +22,14 @@ export const registerSchema = Joi.object<RegisterDTO>({
 export const forgotPasswordSchema = Joi.object<ForgotPasswordDTO>({
   email: Joi.string().email(),
 });
+
 export const resetPasswordSchema = Joi.object<resetPasswordDTO>({
   oldPassword: Joi.string().min(8).required(),
   newPassword: Joi.string().min(8).required(),
+});
+
+export const changePasswordSchema = Joi.object<changePasswordDTO>({
+  oldPassword: Joi.string().min(8).required(),
+  newPassword: Joi.string().min(8).required(),
+  confirmPassword: Joi.string().valid(Joi.ref('newPassword')).required(),
 });

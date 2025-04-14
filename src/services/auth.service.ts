@@ -28,6 +28,17 @@ class authService {
     });
   }
 
+  async changePassword(id: string, hashedNewPassword: string) {
+    return await prisma.user.update({
+      where: {
+        id,
+      },
+      data: {
+        password: hashedNewPassword,
+      },
+    });
+  }
+
   async getDataByEmail(email: string) {
     return await prisma.user.findFirst({
       where: {

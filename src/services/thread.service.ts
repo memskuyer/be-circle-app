@@ -68,6 +68,15 @@ class ThreadService {
     });
   }
 
+  async editThread(id: string, data: CreateThreadDTO) {
+    return await prisma.thread.update({
+      data,
+      where: {
+        id,
+      },
+    });
+  }
+
   async createThread(userId: string, data: CreateThreadDTO) {
     const { content, images } = data;
     return await prisma.thread.create({
@@ -75,6 +84,26 @@ class ThreadService {
         content,
         images,
         userId,
+      },
+    });
+  }
+
+  async deleteThreadById(id: string) {
+    await prisma.like.deleteMany({
+      where: {
+        threadId: id,
+      },
+    });
+
+    await prisma.reply.deleteMany({
+      where: {
+        threadId: id,
+      },
+    });
+
+    return await prisma.thread.delete({
+      where: {
+        id,
       },
     });
   }

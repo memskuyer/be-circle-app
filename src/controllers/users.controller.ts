@@ -1,12 +1,11 @@
+import { v2 as cloudinary } from 'cloudinary';
 import { NextFunction, Request, Response } from 'express';
+import followService from '../services/follow.service';
 import userService from '../services/user.service';
 import {
   createUserSchema,
   updateUserSchema,
 } from '../utils/schemas/user.validator';
-import fs from 'fs';
-import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
-import followService from '../services/follow.service';
 
 class UserController {
   async getUsers(req: Request, res: Response, next: NextFunction) {
@@ -21,12 +20,14 @@ class UserController {
         userData.map(async (user) => {
           const follow = await followService.getFollowById(userId, user.id);
           const isFollow = follow ? true : false;
+          const isFollower = follow ? true : false;
           const followerCount = user.followers.length;
           const followingCount = user.followings.length;
           const { password: unUsedPassword, ...data } = user;
           return {
             ...data,
             isFollow,
+            isFollower,
             followerCount,
             followingCount,
           };
@@ -50,25 +51,38 @@ class UserController {
       const users = await userService.getAllUsers();
       const userData = users.filter((fill) => fill.id !== userId);
 
-      const newUser = await Promise.all(
-        userData.map(async (user) => {
-          const follow = await followService.getFollowById(userId, user.id);
-          const isFollow = follow ? true : false;
-          const followerCount = user.followers.length;
-          const followingCount = user.followings.length;
-          return {
-            ...user,
-            isFollow,
-            followerCount,
-            followingCount,
-          };
-        }),
-      );
       if (!userData) {
         res.status(404).json({ message: 'Data Tidak Ditemukan' });
         return;
       }
-      res.status(200).json({ message: 'Success', data: newUser });
+
+      const newUser = await Promise.all(
+        userData.map(async (user) => {
+          const follow = await followService.getFollowById(userId, user.id);
+          const isFollow = follow ? true : false;
+          const followerLength = user.followers.length;
+
+          const getDataFollower = user.followings.some(
+            (foll) => userId == foll.followedId,
+          );
+
+          return {
+            ...user,
+            followerLength,
+            isFollower: getDataFollower,
+            isFollow,
+          };
+        }),
+      );
+
+      const filteredUser = newUser.filter((user) => !user.isFollow);
+
+      const filterLengsh = filteredUser
+        .map((a) => a)
+        .sort((a, b) => b.followerLength - a.followerLength)
+        .sort((f, g) => Number(g.isFollower) - Number(f.isFollower));
+
+      res.status(200).json({ message: 'Success', data: filterLengsh });
     } catch (error) {
       next(error);
     }

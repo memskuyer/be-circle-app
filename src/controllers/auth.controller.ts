@@ -7,12 +7,12 @@ import authService from '../services/auth.service';
 import userService from '../services/user.service';
 import { RegisterDTO } from '../types/auth.dto';
 import {
+  changePasswordSchema,
   forgotPasswordSchema,
   loginSchema,
   registerSchema,
   resetPasswordSchema,
 } from '../utils/schemas/auth.validator';
-import { log } from 'node:console';
 
 class authController {
   jwtsecret = process.env.JWT_SECRET_KEY || '';
@@ -57,6 +57,7 @@ class authController {
         { expiresIn: '1d' },
       );
       const getDataUser = await userService.getUsersById(user.id);
+
       const followerCount = getDataUser?.followers.length || 0;
       const followingCount = getDataUser?.followings.length || 0;
       const { password: unUsedPassword, ...userResponse } = user;
@@ -126,11 +127,18 @@ class authController {
       const followerCount = user.followers.length || 0;
       const followingCount = user.followings.length || 0;
 
+      const followers = await Promise.all(
+        user.followers.map(async (foll) => {
+          const field = await userService.getUsersById(foll.followingId);
+          return field?.profile;
+        }),
+      );
+
       const { password: unusedPassword, ...userResponse } = user;
 
       res.status(200).json({
         message: 'Success',
-        data: { ...userResponse, followerCount, followingCount },
+        data: { ...userResponse, followerCount, followingCount, followers },
       });
     } catch (error) {
       next(error);
@@ -236,6 +244,74 @@ class authController {
       );
 
       res.status(200).json({ message: 'Success', updatePassword });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async changePassword(req: Request, res: Response, next: NextFunction) {
+    /*  #swagger.requestBody = {
+            required: true,
+            content: {
+                "application/json": {
+                    schema: {
+                        $ref: "#/components/schemas/changePasswordDTO"
+                    }  
+                }
+            }
+        } 
+    */
+    try {
+      const payload = (req as any).user;
+      const body = req.body;
+
+      const { oldPassword, newPassword, confirmPassword } =
+        await changePasswordSchema.validateAsync(body);
+
+      if (newPassword !== confirmPassword) {
+        res.status(400).json({
+          message: 'password is not the same as confirm password',
+        });
+        return;
+      }
+
+      const user = await userService.getUsersById(payload.id);
+      if (!user) {
+        res.status(404).json({
+          message: 'user not found',
+        });
+        return;
+      }
+
+      const isOldPasswordCorrect = await bcrypt.compare(
+        oldPassword,
+        user.password,
+      );
+
+      if (!isOldPasswordCorrect) {
+        res.status(400).json({
+          message: 'Old Password Not Correct',
+        });
+        return;
+      }
+
+      const isNewPasswordCorrect = await bcrypt.compare(
+        newPassword,
+        user.password,
+      );
+
+      if (isNewPasswordCorrect) {
+        res.status(400).json({
+          message: 'Password cannot be the same as previous!',
+        });
+        return;
+      }
+
+      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+      await authService.changePassword(user.id, hashedNewPassword);
+
+      res.status(200).json({ message: 'Success' });
     } catch (error) {
       next(error);
     }

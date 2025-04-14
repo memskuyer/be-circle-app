@@ -72,6 +72,23 @@ const doc = {
           },
         },
       },
+      changePasswordDTO: {
+        type: 'object',
+        properties: {
+          oldPassword: {
+            type: 'string',
+            example: 'example123',
+          },
+          newPassword: {
+            type: 'string',
+            example: '321elpmaxe',
+          },
+          confirmPassword: {
+            type: 'string',
+            example: '321elpmaxe',
+          },
+        },
+      },
       CreateThreadDTO: {
         type: 'object',
         properties: {
@@ -81,7 +98,18 @@ const doc = {
           },
           images: {
             type: 'file',
-            example: 'hanya image/png image/jpeg image/jpg',
+          },
+        },
+      },
+      EditThreadDTO: {
+        type: 'object',
+        properties: {
+          content: {
+            type: 'string',
+            example: 'Lorem Ipsum Bla Bla Bla...',
+          },
+          images: {
+            type: 'file',
           },
         },
       },
@@ -132,6 +160,15 @@ const doc = {
           content: {
             type: 'string',
             example: 'Test Reply Gan',
+          },
+        },
+      },
+      SavedUnsaveDTO: {
+        type: 'object',
+        properties: {
+          threadId: {
+            type: 'string',
+            example: '5673aada-2ee0-4318-9d61-bf9b840c686f',
           },
         },
       },

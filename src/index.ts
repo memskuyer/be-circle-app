@@ -9,6 +9,7 @@ import threadRouter from './routes/thread.routes';
 import likeRouter from './routes/likes.routes';
 import replyRouter from './routes/reply.routes';
 import followRouter from './routes/follow.routes';
+import savedRouter from './routes/saved.routes';
 import swaggerUi from 'swagger-ui-express';
 import swaggerDoc from '../swagger/swagger-output.json';
 import { errorHandler } from './middlewares/error.middleware';
@@ -17,18 +18,18 @@ var cors = require('cors');
 const app = express();
 
 app.use(express.json());
-app.use(
-  cors({
-    origin: process.env.FRONTEND_BASE_URL,
-    methods: ['GET,POST,PUT,DELETE'],
-    credentials: true,
-  }),
-);
 // app.use(
 //   cors({
-//     origin: 'http://localhost:5173',
+//     origin: process.env.FRONTEND_BASE_URL,
+//     methods: ['GET,POST,PUT,DELETE'],
+//     credentials: true,
 //   }),
 // );
+app.use(
+  cors({
+    origin: 'http://localhost:5173',
+  }),
+);
 
 app.use(
   '/docs',
@@ -61,6 +62,7 @@ app.use('/threads', threadRouter);
 app.use('/likes', likeRouter);
 app.use('/reply', replyRouter);
 app.use('/follow', followRouter);
+app.use('/saved', savedRouter);
 
 app.use(errorHandler);
 

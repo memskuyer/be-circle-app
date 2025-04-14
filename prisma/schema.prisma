@@ -23,6 +23,7 @@ model User {
   threads     Thread[]
   likes       Like[]
   replies     Reply[]
+  saved       Saved[]
   followers   Follow[]  @relation("FollowedUser")
   followings  Follow[]  @relation("FollowingUser")
 
@@ -60,6 +61,7 @@ model Thread {
 
   likes         Like[]
   replies       Reply[]
+  saved         Saved[]
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -112,4 +114,19 @@ model Reply {
   updatedAt     DateTime @updatedAt
 
   @@map("replies")
+}
+
+model Saved{
+  id  String @id @default(uuid())
+
+  thread Thread @relation(fields: [threadId], references: [id])
+  threadId String
+
+  user User @relation(fields: [userId], references: [id])
+  userId  String
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("saved")
 }

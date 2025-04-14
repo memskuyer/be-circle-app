@@ -7,6 +7,13 @@ class followService {
         followingId,
         followedId,
       },
+      include: {
+        followed: {
+          include: {
+            profile: true,
+          },
+        },
+      },
     });
   }
 

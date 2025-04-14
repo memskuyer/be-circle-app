@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import replyService from '../services/reply.service';
 import { createReplySchema } from '../utils/schemas/reply.validator';
-import { log } from 'node:console';
 
 class replyController {
   async getReplyByThreadId(req: Request, res: Response, next: NextFunction) {

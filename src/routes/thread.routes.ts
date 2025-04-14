@@ -8,6 +8,13 @@ router.get('/', authCheck, threadController.getThread);
 router.get('/user-threads', authCheck, threadController.getUserThread);
 router.get('/user-threads/:id', authCheck, threadController.getUserThreadById);
 router.get('/:id', authCheck, threadController.getThreadById);
+router.delete('/:id', authCheck, threadController.deleteThread);
+router.patch(
+  '/:id',
+  authCheck,
+  uploadImage.single('images'),
+  threadController.updateThreadById,
+);
 router.post(
   '/',
   authCheck,

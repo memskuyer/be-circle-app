@@ -2,7 +2,12 @@ import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
 import { NextFunction, Request, Response } from 'express';
 import likesService from '../services/likes.service';
 import threadService from '../services/thread.service';
-import { createThreadShema } from '../utils/schemas/thread.validator';
+import {
+  createThreadShema,
+  editThreadShema,
+} from '../utils/schemas/thread.validator';
+import { log } from 'node:console';
+import savedService from '../services/saved.service';
 
 class threadController {
   async getThread(req: Request, res: Response, next: NextFunction) {
@@ -15,12 +20,15 @@ class threadController {
           const isLiked = like ? true : false;
           const likesCount = thread.likes.length;
           const repliesCount = thread.replies.length;
+          const saved = await savedService.getSavedById(thread.id, userId);
+          const isSaved = saved ? true : false;
 
           return {
             ...thread,
             likesCount,
             repliesCount,
             isLiked,
+            isSaved,
           };
         }),
       );
@@ -93,6 +101,84 @@ class threadController {
       );
 
       res.status(200).json({ message: 'Success', data: userThread });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateThreadById(req: Request, res: Response, next: NextFunction) {
+    /*  #swagger.requestBody = {
+              required: true,
+              description: "Edit Thread",
+              content: {
+                  "multipart/form-data": {
+                      schema: {
+                          $ref: "#/components/schemas/EditThreadDTO"
+                      }  
+                  }
+              }
+          } 
+      */
+    try {
+      const userId = (req as any).user.id;
+      const { id } = req.params;
+      const data = await threadService.getThreadsById(id);
+
+      if (!data) {
+        res.status(404).json({ message: 'Thread not found' });
+        return;
+      }
+
+      let oldImage = undefined;
+      let uploadResult: UploadApiResponse = {} as UploadApiResponse;
+      if (req.file) {
+        uploadResult = await cloudinary.uploader.upload(req.file?.path || '');
+      } else {
+        if (data.images) {
+          oldImage = data.images || undefined;
+        }
+      }
+
+      if (userId !== data?.user.id) {
+        res.status(403).json({ message: `it's not your right to change` });
+        return;
+      }
+
+      const body = {
+        ...req.body,
+        images: uploadResult.secure_url ?? oldImage,
+      };
+
+      const validateBody = await editThreadShema.validateAsync(body);
+      if (!validateBody.content) {
+        validateBody.content = data?.content || req.body.content;
+      }
+
+      const updateData = await threadService.editThread(id, validateBody);
+      res.status(200).json({ message: 'Success', updateData });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async deleteThread(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = (req as any).user.id;
+      const { id } = req.params;
+      const data = await threadService.getThreadsById(id);
+
+      if (!data) {
+        res.status(404).json({ message: 'Thread Not Found' });
+        return;
+      }
+
+      if (userId !== data?.user.id) {
+        res.status(400).json({ message: 'it is not your right to delete' });
+        return;
+      }
+
+      await threadService.deleteThreadById(id);
+      res.status(200).json({ message: 'Success Delete Thread', data });
     } catch (error) {
       next(error);
     }
