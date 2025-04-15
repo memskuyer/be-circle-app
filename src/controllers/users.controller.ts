@@ -6,6 +6,7 @@ import {
   createUserSchema,
   updateUserSchema,
 } from '../utils/schemas/user.validator';
+import { log } from 'node:console';
 
 class UserController {
   async getUsers(req: Request, res: Response, next: NextFunction) {
@@ -171,6 +172,9 @@ class UserController {
         );
         bannerUrl = uploadedBanner.secure_url;
       }
+
+      console.log('ava', avatarUrl);
+      console.log('ban', bannerUrl);
 
       const body = {
         ...req.body,

@@ -53,7 +53,7 @@ model Profile {
 model Thread {
   id            String   @id @default(uuid())
 
-  content       String
+  content       String?
   images        String? 
 
   user          User     @relation(fields: [userId],references: [id], onDelete: Cascade, onUpdate: Cascade)

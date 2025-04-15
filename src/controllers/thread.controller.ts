@@ -200,14 +200,26 @@ class threadController {
     try {
       let uploadResult: UploadApiResponse = {} as UploadApiResponse;
 
+      if (!req.file && req.body.content == 0) {
+        res.status(404).json({ message: 'Data Tidak Boleh kosong' });
+        return;
+      }
+
+      var content: string | undefined;
+
+      if (req.body.content) {
+        content = req.body.content;
+      }
+
       if (req.file) {
         uploadResult = await cloudinary.uploader.upload(req.file?.path || '');
       }
 
       const body = {
-        ...req.body,
+        content,
         images: uploadResult?.secure_url ?? undefined,
       };
+
       const userId = (req as any).user.id;
       const validateBody = await createThreadShema.validateAsync(body);
       const thread = await threadService.createThread(userId, validateBody);
